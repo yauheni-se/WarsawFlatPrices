@@ -1,5 +1,5 @@
 # Presets ----
-setwd("C:/Projects/WarsawInterest/")
+setwd("C:/Projects/WarsawFlatPrices/")
 
 library(sf)
 library(leaflet)
@@ -9,8 +9,8 @@ library(tidyverse)
 st_layers("data/osm/gis_osm_buildings_a_free_1.shp")
 df <- st_read("data/osm/gis_osm_buildings_a_free_1.shp")
 df <- st_transform(df, "+init=epsg:4326")
+df <- df[!is.na(df$type) & str_detect(df$type, "abandoned|construction|dormitory|factory|garage|industrial|manufacture|office"), ]
 df <- df %>% as_Spatial()
-df@data <- df@data %>% filter(!is.na(type)) %>% select(-c(fclass, code))
 write_rds(df, "data/clean/buildings.rds")
 
 

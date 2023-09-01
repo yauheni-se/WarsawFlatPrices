@@ -1,6 +1,6 @@
 library(tidyverse)
 library(plotly)
-setwd('C:/Projects/HousePricesWarsaw/')
+setwd('C:/Projects/WarsawFlatPrices/')
 Sys.setlocale("LC_ALL", "Polish")
 
 df <- data.table::fread("data/flats.csv") %>% as_tibble()

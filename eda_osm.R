@@ -1,11 +1,11 @@
 # Presets ----
-setwd("C:/Projects/WarsawInterest/")
+setwd("C:/Projects/WarsawFlatPrices/")
 
 library(sf)
 library(leaflet)
 library(tidyverse)
 
-filne_name <- "waterways" # places2 #places.rds
+filne_name <- "buildings" # "places2" "places" "beaches", churches, trees, places, places2, railways, traffic, traffic2, transport2, water, waterways
 data_poland <- read_rds("data/poland.rds")
 data_warsaw <- data_poland[data_poland$NAME_3 == "Warszawa",]
 rm(data_poland)
@@ -19,11 +19,12 @@ regions %>%
 
 df <- read_rds(paste0("data/clean/", filne_name, ".rds"))
 
+
 # Keep only data from Warsaw, not whole voivodeship ----
 df_centers <- data.frame(rgeos::gCentroid(df, byid=TRUE)) %>% 
   as_tibble() %>% 
   mutate(
-    object_type = df@data$fclass,
+    object_type = df@data$type,#fclass,
     object_name = df@data$name
   ) %>% 
   mutate(id = row_number()) %>%
@@ -37,7 +38,7 @@ df_dict <- df_centers %>%
   st_join(st_as_sf(data_warsaw) %>% st_set_crs(4326) %>% st_transform(2163)) %>% 
   as.data.frame() %>% 
   as_tibble() %>% 
-  filter(!is.na(NAME_3)) %>% 
+  filter(!is.na(object_type)) %>% 
   select(id, object_type, object_name)
 
 df_centers <- df_dict %>% 
@@ -51,7 +52,7 @@ drop_lst <- c(
   "atm", "camera_surveillance", "caravan_site", "chalet", "comms_tower", "public_building",
   "bench", "toilet", "bench", "drinking_water", "hunting_stand", "newsagent", "tourist_info",
   "travel_agent", "waste_basket", "post_box", "vending_any", "wayside_shrine", "wayside_cross",
-  "water_well", "vending_machine", "shelter", "cliff", "commercial", "industrial", "recreation_ground",
+  "water_well", "vending_machine", "shelter", "cliff", "commercial", "recreation_ground", #"industrial",
   "retail", "scrub", "quarry", "ice_rink", "telephone", "track", "weir", "pier", "marina",
   "street_lamp", "lock_gate", "mini_roundabout", "crossing", "dam", "slipway", "speed_camera",
   "traffic_signals", "turning_circle", "waterfall", "helipad", "ferry_terminal"
@@ -190,11 +191,17 @@ rename_objects <- function(x) {
   )
 }
 
-df_centers <- df_centers %>% 
-  filter(!object_type %in% drop_lst) %>% 
-  mutate(object_type = map_chr(object_type, rename_objects)) %>% 
-  filter(!object_type %in% c("recycling"))
-
+if (filne_name == "buildings") {
+  df_centers <- df_centers %>% 
+    mutate(object_type = ifelse(str_detect(object_type, "industrial|factory|manufacture"), "industrial", object_type)) %>% 
+    mutate(object_type = ifelse(str_detect(object_type, "garage"), "garage", object_type)) %>% 
+    mutate(object_type = ifelse(str_detect(object_type, "abandoned"), "house_abandoned", object_type))
+} else {
+  df_centers <- df_centers %>% 
+    filter(!object_type %in% drop_lst) %>% 
+    mutate(object_type = map_chr(object_type, rename_objects)) %>% 
+    filter(!object_type %in% c("recycling"))
+}
 # Group by regions ----
 df_by_reg <- df_centers %>% 
   as.data.frame() %>% 
@@ -287,5 +294,5 @@ plt_lst$drain
 regions@data %>% as_tibble()
 
 # Save ----
-write_rds(df_centers, paste0("data/clean/points", filne_name, ".rds"))
-write_rds(regions, paste0("data/clean/by regions", filne_name, ".rds"))
+write_rds(df_centers, paste0("data/clean/points/", filne_name, ".rds"))
+write_rds(regions, paste0("data/clean/by regions/", filne_name, ".rds"))
