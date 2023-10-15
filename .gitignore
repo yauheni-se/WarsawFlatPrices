@@ -8,3 +8,4 @@ data/clean/pre_cleaned/
 data/clean/variables_desc.csv
 data/osm/
 data/scrapped/
+.ipynb_checkpoints/
