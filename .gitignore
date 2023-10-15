@@ -3,3 +3,8 @@ catboost_info/
 plots_single/
 prep_lgbm.R
 extract_desc.ipynb
+data/clean/dataset_testing.csv
+data/clean/pre_cleaned/
+data/clean/variables_desc.csv
+data/osm/
+data/scrapped/
