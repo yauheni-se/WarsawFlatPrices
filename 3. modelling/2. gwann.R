@@ -15,30 +15,28 @@ library(tictoc)
 setwd("C:/Projects/WarsawFlatPrices/")
 df <- read_rds("data/clean/dataset_final.rds")
 
-# DATA PREP ----
-if (FALSE) {
-  X <- df %>% 
-    mutate(
-      rooms_num_4 = ifelse(rooms_num == "4", 1L, 0L),
-      rooms_num_more = ifelse(rooms_num == "4+", 1L, 0L),
-      building_type_block = ifelse(building_type == "block", 1L, 0L),
-      building_type_apartment = ifelse(building_type == "apartment", 1L, 0L),
-      windows_type_plastic = ifelse(windows_type == "plastic", 1L, 0L),
-      windows_type_wooden = ifelse(windows_type == "wooden", 1L, 0L),
-      floor_no_45 = ifelse(floor_no %in% c("4", "5"), 1L, 0L),
-      floor_no_67 = ifelse(floor_no %in% c("6", "7"), 1L, 0L),
-      floor_no_89 = ifelse(floor_no %in% c("8", "9", "9+", "unknown"), 1L, 0L),
-      building_floors_num_45 = ifelse(building_floors_num %in% c("4", "5"), 1L, 0L),
-      building_floors_num_67 = ifelse(building_floors_num %in% c("6", "7"), 1L, 0L),
-      building_floors_num_89 = ifelse(building_floors_num %in% c("8", "9", "9+", "unknown"), 1L, 0L)
-    ) %>% 
-    fastDummies::dummy_cols("region") %>% 
-    dplyr::select(-c(id, price_per_m, rooms_num, building_type, windows_type, floor_no, building_floors_num, region, `region_Śródmieście`)) %>% 
-    as.matrix()
-  y <- as.numeric(df$price_per_m)
-  dm <- as.matrix(dist(df %>% dplyr::select(x, y)))
-  s_test <- sample(nrow(X), 0.3*nrow(X))
-}
+# DATA PREPARATION ----
+X <- df %>% 
+  mutate(
+    rooms_num_4 = ifelse(rooms_num == "4", 1L, 0L),
+    rooms_num_more = ifelse(rooms_num == "4+", 1L, 0L),
+    building_type_block = ifelse(building_type == "block", 1L, 0L),
+    building_type_apartment = ifelse(building_type == "apartment", 1L, 0L),
+    windows_type_plastic = ifelse(windows_type == "plastic", 1L, 0L),
+    windows_type_wooden = ifelse(windows_type == "wooden", 1L, 0L),
+    floor_no_45 = ifelse(floor_no %in% c("4", "5"), 1L, 0L),
+    floor_no_67 = ifelse(floor_no %in% c("6", "7"), 1L, 0L),
+    floor_no_89 = ifelse(floor_no %in% c("8", "9", "9+", "unknown"), 1L, 0L),
+    building_floors_num_45 = ifelse(building_floors_num %in% c("4", "5"), 1L, 0L),
+    building_floors_num_67 = ifelse(building_floors_num %in% c("6", "7"), 1L, 0L),
+    building_floors_num_89 = ifelse(building_floors_num %in% c("8", "9", "9+", "unknown"), 1L, 0L)
+  ) %>% 
+  fastDummies::dummy_cols("region") %>% 
+  dplyr::select(-c(id, price_per_m, rooms_num, building_type, windows_type, floor_no, building_floors_num, region, `region_Śródmieście`)) %>% 
+  as.matrix()
+y <- as.numeric(df$price_per_m)
+dm <- as.matrix(dist(df %>% dplyr::select(x, y)))
+s_test <- sample(nrow(X), 0.3*nrow(X))
 
 # MODELING ----
 cv_gwann <- function(df, k=10) {
@@ -96,15 +94,3 @@ cv_gwann_fit <- cv_gwann(df, 10)
 toc()
 
 write_rds(cv_gwann_fit, "data/clean/gwann_pred.rds")
-# tic()
-# gwann_fit <- gwann(
-#   x_train = X[-s_test,],
-#   y_train = y[-s_test],
-#   w_train = dm[-s_test, -s_test],
-#   x_pred = X[s_test,],
-#   w_pred = dm[-s_test, s_test],
-#   nrHidden = 40, batchSize = 50, lr = 0.1, optimizer = "adam", adaptive = F,
-#   cv_patience = 9999, bwSearch = "goldenSection", bwMin = min(dm)/4, bwMax = max(dm)/4,
-#   threads = 10
-# )
-# toc()

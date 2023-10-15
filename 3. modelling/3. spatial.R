@@ -1,4 +1,4 @@
-# Presets ----
+# PRESETS ----
 setwd("C:/Projects/WarsawFlatPrices/")
 options(scipen = 999, java.parameters="-Xmx8g")
 library(tidyverse)
@@ -31,7 +31,7 @@ poland <- read_rds("data/poland.rds")
 warsaw <- poland[poland$NAME_3 == "Warszawa",]
 
 
-# Calculate weight matrix ----
+# CALCULATE WEIGHT MATRIX ----
 create_w_lst <- function(spatial_data, id_col = "PolIDS", type="dist", k=5, d1=0.01, d2=2) {
   if (type =="dist") {
     distance <- distm(coordinates(spatial_data), fun = distGeo) / 1000
@@ -58,7 +58,7 @@ create_w_lst <- function(spatial_data, id_col = "PolIDS", type="dist", k=5, d1=0
 W_list <- create_w_lst(rect_grid, type="dist")  #mixed, knn, dist
 W_matrix <- listw2mat(W_list)
 
-# Visualization functions ----
+# VISUALIZATION FUNCTIONS ----
 create_color <- function(x) {
   case_when(
     x > 0 & x >= quantile(x[x>0], probs = 0.9, names = FALSE, na.rm = TRUE) ~ "#67001F",   
@@ -1162,7 +1162,7 @@ toc() #0.06sec
 res_cv_median <- calc_res_tb(cv_median_fit, "median")
 metrics_median <- calc_metrics(cv_median_fit, "median")
 
-# Comparing all models ----
+# COMPARE ALL MODELS ----
 metrics_all <- bind_rows(
   metrics_lm,
   metrics_mean,
@@ -1249,7 +1249,7 @@ show_residuals_point(residuals_all$res_gwann, "GWANN")
 
 
 
-# Feature importances ----
+# FEATURE IMPORTANCE ----
 
 # ML:
 importances_ml <- readxl::read_excel("data/clean/importances.xlsx")
